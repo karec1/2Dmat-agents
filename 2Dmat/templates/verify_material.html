@@ -1,0 +1,141 @@
+<!-- templates/verify_material.html -->
+{% extends "base.html" %}
+
+{% block title %}Верификация материала - 2D Magnets Database{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-10">
+        <div class="card">
+            <div class="card-header">
+                <h4 class="mb-0">Верификация материала: {{ material.formula }}</h4>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('verify_material', material_id=material.id) }}" enctype="multipart/form-data">
+                    {{ form.hidden_tag() }}
+                    
+                    <div class="row mb-4">
+                        <div class="col-md-8">
+                            <h5>Информация о материале</h5>
+                            <table class="table table-sm">
+                                <tr>
+                                    <td><strong>Формула:</strong></td>
+                                    <td>{{ material.formula }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Название:</strong></td>
+                                    <td>{{ material.name }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Метод расчета:</strong></td>
+                                    <td>{{ material.calculation_method or 'Не указано' }}</td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="alert alert-info">
+                                <h6><i class="fas fa-info-circle"></i> Инструкция</h6>
+                                <p class="mb-0">Оцените материал по шкале от 1 до 5 по каждому критерию.</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Критерии оценки -->
+                    <div class="row mb-4">
+                        <div class="col-md-3">
+                            <div class="card h-100">
+                                <div class="card-body text-center">
+                                    <h5>{{ form.calculation_methodology_score.label.text }}</h5>
+                                    {{ form.calculation_methodology_score(class="form-control text-center", min=1, max=5) }}
+                                    <small class="text-muted">1=плохо, 5=отлично</small>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-3">
+                            <div class="card h-100">
+                                <div class="card-body text-center">
+                                    <h5>{{ form.data_consistency_score.label.text }}</h5>
+                                    {{ form.data_consistency_score(class="form-control text-center", min=1, max=5) }}
+                                    <small class="text-muted">1=плохо, 5=отлично</small>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-3">
+                            <div class="card h-100">
+                                <div class="card-body text-center">
+                                    <h5>{{ form.reproducibility_score.label.text }}</h5>
+                                    {{ form.reproducibility_score(class="form-control text-center", min=1, max=5) }}
+                                    <small class="text-muted">1=плохо, 5=отлично</small>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-3">
+                            <div class="card h-100">
+                                <div class="card-body text-center">
+                                    <h5>{{ form.documentation_score.label.text }}</h5>
+                                    {{ form.documentation_score(class="form-control text-center", min=1, max=5) }}
+                                    <small class="text-muted">1=плохо, 5=отлично</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Комментарии -->
+                    <div class="row mb-4">
+                        <div class="col-md-12">
+                            <h5>Комментарии и замечания</h5>
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            {{ form.methodology_notes.label(class="form-label") }}
+                            {{ form.methodology_notes(class="form-control", rows=3, placeholder="Замечания по методологии расчетов...") }}
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            {{ form.data_quality_notes.label(class="form-label") }}
+                            {{ form.data_quality_notes(class="form-control", rows=3, placeholder="Замечания по качеству данных...") }}
+                        </div>
+                        
+                        <div class="col-md-12 mb-3">
+                            {{ form.suggested_improvements.label(class="form-label") }}
+                            {{ form.suggested_improvements(class="form-control", rows=3, placeholder="Предложения по улучшению...") }}
+                        </div>
+                    </div>
+                    
+                    <!-- Отчет -->
+                    <div class="row mb-4">
+                        <div class="col-md-12">
+                            <h5>Отчет о проверке</h5>
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            {{ form.verification_report.label(class="form-label") }}
+                            {{ form.verification_report(class="form-control") }}
+                            <small class="form-text text-muted">Необязательно. PDF отчет о проверке</small>
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <div class="form-check mt-4">
+                                {{ form.is_approved(class="form-check-input") }}
+                                {{ form.is_approved.label(class="form-check-label") }}
+                            </div>
+                            <small class="form-text text-muted">Если не отмечено, материал будет отклонен</small>
+                        </div>
+                    </div>
+                    
+                    <!-- Кнопки -->
+                    <div class="d-grid gap-2">
+                        {{ form.submit(class="btn btn-primary btn-lg") }}
+                        <a href="{{ url_for('material_detail', material_id=material.id) }}" class="btn btn-outline-secondary">
+                            Отмена
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,113 @@
+{% extends "base.html" %}
+
+{% block title %}Главная - 2D Magnets Database{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8">
+        <h1 class="mb-4">
+            <i class="fas fa-database"></i> База данных двумерных магнитных материалов
+        </h1>
+        <p class="lead">
+            Открытая база данных расчетных свойств квазидвумерных магнитных материалов 
+            для исследований в области спинтроники и наноэлектроники.
+        </p>
+        
+        <div class="row mt-5">
+            <div class="col-md-4">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <h1 class="display-4 stats-total">{{ stats.total_materials }}</h1>
+                        <p class="card-text">Материалов в базе</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <h1 class="display-4">{{ stats.fm_materials if stats.fm_materials is defined else 0 }}</h1>
+                        <p class="card-text">Ферромагнетиков</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <h1 class="display-4">{{ stats.afm_materials if stats.afm_materials is defined else 0 }}</h1>
+                        <p class="card-text">Антиферромагнетиков</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="mt-5">
+            <h3>Быстрый поиск</h3>
+            <form action="{{ url_for('browse') }}" method="get" class="row g-3">
+                <div class="col-md-6">
+                    <input type="text" class="form-control" name="formula" 
+                           placeholder="Введите формулу (например, CrI3, Fe3GeTe2)">
+                </div>
+                <div class="col-md-4">
+                    <select class="form-select" name="magnetic_order">
+                        <option value="">Любой магнитный порядок</option>
+                        <option value="FM">Ферромагнетик (FM)</option>
+                        <option value="AFM">Антиферромагнетик (AFM)</option>
+                        <option value="ferrimagnetic">Ферримагнетик</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-primary w-100">Найти</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Недавно добавленные материалы</h5>
+            </div>
+            <div class="card-body">
+                <div class="list-group">
+                    {% for material in stats.recent_materials %}
+                    <a href="{{ url_for('material_detail', material_id=material.id) }}" 
+                       class="list-group-item list-group-item-action">
+                        <div class="d-flex w-100 justify-content-between">
+                            <h6 class="mb-1">{{ material.formula }}</h6>
+                            <small>{{ material.created_at.strftime('%d.%m.%Y') if material.created_at else '' }}</small>
+                        </div>
+                        <p class="mb-1">
+                            <span class="badge bg-{% if material.magnetic_order == 'FM' %}danger{% else %}info{% endif %}">
+                                {{ material.magnetic_order or 'N/A' }}
+                            </span>
+                            {% if material.curie_temperature %}
+                            <span class="badge bg-secondary">
+                                T<sub>C</sub> = {{ "%.0f"|format(material.curie_temperature) }} K
+                            </span>
+                            {% endif %}
+                        </p>
+                    </a>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        
+        <div class="card mt-4">
+            <div class="card-body">
+                <h5 class="card-title">Доступные действия</h5>
+                <div class="d-grid gap-2">
+                    <a href="{{ url_for('browse') }}" class="btn btn-outline-primary">
+                        <i class="fas fa-search"></i> Просмотр всех материалов
+                    </a>
+                    <a href="{{ url_for('api_materials') }}" class="btn btn-outline-secondary">
+                        <i class="fas fa-code"></i> API документация
+                    </a>
+                    <a href="{{ url_for('export_csv') }}" class="btn btn-outline-success">
+                        <i class="fas fa-download"></i> Экспорт в CSV
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

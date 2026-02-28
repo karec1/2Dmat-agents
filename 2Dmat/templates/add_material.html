@@ -1,0 +1,331 @@
+<!-- templates/add_material.html -->
+{% extends "base.html" %}
+
+{% block title %}Добавить материал - 2D Magnets Database{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
+        <h1 class="mb-4">Добавить новый материал</h1>
+        
+        <form method="POST" action="{{ url_for('add_material') }}" enctype="multipart/form-data">
+            {{ form.hidden_tag() }}
+            
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Основная информация</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            {{ form.name.label(class="form-label") }}
+                            {{ form.name(class="form-control" + (" is-invalid" if form.name.errors else "")) }}
+                            {% if form.name.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in form.name.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            {{ form.formula.label(class="form-label") }}
+                            {{ form.formula(class="form-control" + (" is-invalid" if form.formula.errors else "")) }}
+                            {% if form.formula.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in form.formula.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            {{ form.iupac_name.label(class="form-label") }}
+                            {{ form.iupac_name(class="form-control" + (" is-invalid" if form.iupac_name.errors else "")) }}
+                            {% if form.iupac_name.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in form.iupac_name.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            {{ form.cas_number.label(class="form-label") }}
+                            {{ form.cas_number(class="form-control" + (" is-invalid" if form.cas_number.errors else "")) }}
+                            {% if form.cas_number.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in form.cas_number.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Структурные свойства</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            {{ form.crystal_system.label(class="form-label") }}
+                            {{ form.crystal_system(class="form-select" + (" is-invalid" if form.crystal_system.errors else "")) }}
+                            {% if form.crystal_system.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in form.crystal_system.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            {{ form.space_group.label(class="form-label") }}
+                            {{ form.space_group(class="form-control" + (" is-invalid" if form.space_group.errors else "")) }}
+                            {% if form.space_group.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in form.space_group.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Вычислительные параметры</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            {{ form.calculation_method.label(class="form-label") }}
+                            {{ form.calculation_method(class="form-select" + (" is-invalid" if form.calculation_method.errors else "")) }}
+                            {% if form.calculation_method.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in form.calculation_method.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="col-md-4 mb-3">
+                            {{ form.functional.label(class="form-label") }}
+                            {{ form.functional(class="form-control" + (" is-invalid" if form.functional.errors else "")) }}
+                            {% if form.functional.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in form.functional.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="col-md-4 mb-3">
+                            {{ form.software.label(class="form-label") }}
+                            {{ form.software(class="form-control" + (" is-invalid" if form.software.errors else "")) }}
+                            {% if form.software.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in form.software.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Физические свойства</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            {{ form.band_gap.label(class="form-label") }}
+                            {{ form.band_gap(class="form-control" + (" is-invalid" if form.band_gap.errors else "")) }}
+                            {% if form.band_gap.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in form.band_gap.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            {{ form.band_gap_type.label(class="form-label") }}
+                            {{ form.band_gap_type(class="form-select" + (" is-invalid" if form.band_gap_type.errors else "")) }}
+                            {% if form.band_gap_type.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in form.band_gap_type.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            {{ form.magnetic_order.label(class="form-label") }}
+                            {{ form.magnetic_order(class="form-select" + (" is-invalid" if form.magnetic_order.errors else "")) }}
+                            {% if form.magnetic_order.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in form.magnetic_order.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="col-md-4 mb-3">
+                            {{ form.magnetic_moment.label(class="form-label") }}
+                            {{ form.magnetic_moment(class="form-control" + (" is-invalid" if form.magnetic_moment.errors else "")) }}
+                            {% if form.magnetic_moment.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in form.magnetic_moment.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="col-md-4 mb-3">
+                            {{ form.curie_temperature.label(class="form-label") }}
+                            {{ form.curie_temperature(class="form-control" + (" is-invalid" if form.curie_temperature.errors else "")) }}
+                            {% if form.curie_temperature.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in form.curie_temperature.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Файлы</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            {{ form.cif_file.label(class="form-label") }}
+                            {{ form.cif_file(class="form-control" + (" is-invalid" if form.cif_file.errors else "")) }}
+                            {% if form.cif_file.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in form.cif_file.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            {{ form.poscar_file.label(class="form-label") }}
+                            {{ form.poscar_file(class="form-control" + (" is-invalid" if form.poscar_file.errors else "")) }}
+                            {% if form.poscar_file.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in form.poscar_file.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            {{ form.band_structure_file.label(class="form-label") }}
+                            {{ form.band_structure_file(class="form-control" + (" is-invalid" if form.band_structure_file.errors else "")) }}
+                            {% if form.band_structure_file.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in form.band_structure_file.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            {{ form.dos_file.label(class="form-label") }}
+                            {{ form.dos_file(class="form-control" + (" is-invalid" if form.dos_file.errors else "")) }}
+                            {% if form.dos_file.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in form.dos_file.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Метаданные</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        {{ form.doi.label(class="form-label") }}
+                        {{ form.doi(class="form-control" + (" is-invalid" if form.doi.errors else "")) }}
+                        {% if form.doi.errors %}
+                            <div class="invalid-feedback">
+                                {% for error in form.doi.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        {{ form.reference.label(class="form-label") }}
+                        {{ form.reference(class="form-control" + (" is-invalid" if form.reference.errors else ""), rows=3) }}
+                        {% if form.reference.errors %}
+                            <div class="invalid-feedback">
+                                {% for error in form.reference.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        {{ form.tags.label(class="form-label") }}
+                        {{ form.tags(class="form-control" + (" is-invalid" if form.tags.errors else "")) }}
+                        {% if form.tags.errors %}
+                            <div class="invalid-feedback">
+                                {% for error in form.tags.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                        <small class="form-text text-muted">Теги через запятую (например: 2D, магнитный, спинтроника)</small>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="d-grid">
+                {{ form.submit(class="btn btn-primary btn-lg") }}
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

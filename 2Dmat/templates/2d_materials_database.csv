@@ -1,0 +1,4 @@
+ID,Formula,Name,Crystal System,Space Group,Band Gap (eV),Band Gap Type,Magnetic Order,Magnetic Moment (μB),Curie Temperature (K),Is Verified,Verification Score (%),DOI,Created At
+1,CrI3,Chromium(III) iodide,Trigonal,R-3,1.200,direct,FM,3.00,45.0,Yes,95.0,10.1038/nature22391,2025-12-20 21:44:46
+2,Cr2Ge2Te6,Chromium germanium telluride,Trigonal,P3m1,0.800,indirect,FM,6.00,61.0,Yes,90.0,10.1021/acs.nanolett.7b01349,2025-12-20 21:44:46
+3,FeCl3,Iron(III) chloride,Trigonal,P-3m1,0.500,direct,AFM,5.00,15.0,No,75.0,10.1103/PhysRevB.98.214420,2025-12-20 21:44:46

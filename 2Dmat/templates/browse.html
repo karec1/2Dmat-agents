@@ -1,0 +1,160 @@
+{% extends "base.html" %}
+
+{% block title %}Материалы - 2D Magnets Database{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-3">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">Фильтры</h5>
+            </div>
+            <div class="card-body">
+                <form method="get" action="{{ url_for('browse') }}">
+                    <div class="mb-3">
+                        <label class="form-label">Формула</label>
+                        <input type="text" class="form-control" name="formula" 
+                               value="{{ filters.formula }}">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Магнитный порядок</label>
+                        <select class="form-select" name="magnetic_order">
+                            <option value="">Все</option>
+                            {% for order in unique_orders %}
+                            <option value="{{ order }}" 
+                                    {% if filters.magnetic_order == order %}selected{% endif %}>
+                                {{ order }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">
+                            Минимальная T<sub>C</sub> (K)
+                            {% if filters.min_tc %}
+                            <span class="badge bg-info">{{ filters.min_tc }} K</span>
+                            {% endif %}
+                        </label>
+                        <input type="range" class="form-range" min="0" max="500" step="10" 
+                               name="min_tc" value="{{ filters.min_tc }}"
+                               oninput="document.getElementById('tcValue').innerHTML = this.value + ' K'">
+                        <div class="text-center">
+                            <span id="tcValue" class="badge bg-secondary">
+                                {{ filters.min_tc }} K
+                            </span>
+                        </div>
+                    </div>
+                    
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-filter"></i> Применить фильтры
+                        </button>
+                        <a href="{{ url_for('browse') }}" class="btn btn-outline-secondary">
+                            Сбросить
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-body">
+                <h6>Статистика выборки</h6>
+                <ul class="list-unstyled">
+                    <li>Найдено: <strong>{{ materials|length }}</strong></li>
+                    <li>Ферромагнетиков: 
+                        <strong>{{ materials|selectattr('magnetic_order', 'equalto', 'FM')|list|length }}</strong>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-9">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2>Материалы</h2>
+            <div>
+                <span class="badge bg-info me-2">Всего: {{ materials|length }}</span>
+                <a href="/api/export/csv" class="btn btn-sm btn-outline-success">
+                    <i class="fas fa-download"></i> CSV
+                </a>
+            </div>
+        </div>
+        
+        {% if materials %}
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Формула</th>
+                        <th>Название</th>
+                        <th>Структура</th>
+                        <th>E<sub>g</sub> (eV)</th>
+                        <th>Магн. порядок</th>
+                        <th>μ (μ<sub>B</sub>)</th>
+                        <th>T<sub>C</sub> (K)</th>
+                        <th>Действия</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for material in materials %}
+                    <tr>
+                        <td>
+                            <strong>{{ material.formula }}</strong>
+                        </td>
+                        <td>{{ material.name }}</td>
+                        <td>
+                            <span class="badge bg-light text-dark">{{ material.structure_type }}</span>
+                        </td>
+                        <td>
+                            {% if material.band_gap %}
+                            <span class="badge bg-{% if material.band_gap < 1.0 %}success{% else %}warning{% endif %}">
+                                {{ "%.2f"|format(material.band_gap) }}
+                            </span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <span class="badge bg-{% if material.magnetic_order == 'FM' %}danger{% else %}info{% endif %}">
+                                {{ material.magnetic_order }}
+                            </span>
+                        </td>
+                        <td>
+                            {% if material.magnetic_moment %}
+                            {{ "%.1f"|format(material.magnetic_moment) }}
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if material.tc_estimate %}
+                            <span class="badge bg-secondary">
+                                {{ "%.0f"|format(material.tc_estimate) }}
+                            </span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <a href="{{ url_for('material_detail', material_id=material.id) }}" 
+                               class="btn btn-sm btn-outline-primary">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                            <a href="/api/material/{{ material.id }}" 
+                               class="btn btn-sm btn-outline-secondary"
+                               target="_blank">
+                                <i class="fas fa-code"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="alert alert-info">
+            <i class="fas fa-info-circle"></i>
+            Материалы по заданным фильтрам не найдены.
+            <a href="{{ url_for('browse') }}">Показать все материалы</a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

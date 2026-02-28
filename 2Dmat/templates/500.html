@@ -1,0 +1,20 @@
+<!-- templates/500.html -->
+{% extends "base.html" %}
+
+{% block title %}Ошибка сервера - 2D Magnets Database{% endblock %}
+
+{% block content %}
+<div class="text-center py-5">
+    <h1 class="display-1 text-muted">500</h1>
+    <h2 class="mb-4">Внутренняя ошибка сервера</h2>
+    <p class="lead mb-4">Произошла непредвиденная ошибка. Мы уже работаем над ее устранением.</p>
+    <div class="d-flex justify-content-center gap-2">
+        <a href="{{ url_for('index') }}" class="btn btn-primary">
+            <i class="fas fa-home"></i> На главную
+        </a>
+        <button onclick="window.history.back()" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left"></i> Назад
+        </button>
+    </div>
+</div>
+{% endblock %}

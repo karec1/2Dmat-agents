@@ -1,0 +1,325 @@
+<!-- templates/profile.html -->
+{% extends "base.html" %}
+
+{% block title %}Профиль - 2D Magnets Database{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-4">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">Информация профиля</h5>
+            </div>
+            <div class="card-body">
+                <div class="text-center mb-4">
+                    <div class="display-6 mb-2">
+                        <i class="fas fa-user-circle"></i>
+                    </div>
+                    <h4>{{ user.full_name }}</h4>
+                    <p class="text-muted">{{ user.affiliation }}</p>
+                </div>
+                
+                <table class="table table-sm">
+                    <tr>
+                        <td><strong>Имя пользователя:</strong></td>
+                        <td>{{ user.username }}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Email:</strong></td>
+                        <td>{{ user.email }}</td>
+                    </tr>
+                    {% if user.orcid %}
+                    <tr>
+                        <td><strong>ORCID:</strong></td>
+                        <td>{{ user.orcid }}</td>
+                    </tr>
+                    {% endif %}
+                    <tr>
+                        <td><strong>Роль:</strong></td>
+                        <td>
+                            {% if user.role == 'admin' %}
+                            <span class="badge bg-danger">Администратор</span>
+                            {% elif user.role == 'expert' %}
+                            <span class="badge bg-warning">Эксперт</span>
+                            {% else %}
+                            <span class="badge bg-info">Пользователь</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><strong>Дата регистрации:</strong></td>
+                        <td>{{ user.created_at.strftime('%d.%m.%Y') }}</td>
+                    </tr>
+                </table>
+                
+		    <div class="mt-3">
+		            <a href="{{ url_for('edit_profile') }}" class="btn btn-outline-primary btn-sm">
+		                   <i class="fas fa-edit"></i> Редактировать профиль
+		            </a>
+		    </div>
+            </div>
+        </div>
+        
+            {% if user.profile_picture %}
+    <img src="{{ url_for('static', filename='uploads/profiles/' + user.profile_picture) }}" 
+         class="img-thumbnail rounded-circle" 
+         width="150" height="150"
+         alt="Фото профиля">
+    {% else %}
+    <div class="bg-light rounded-circle d-flex align-items-center justify-content-center mb-3" 
+         style="width: 150px; height: 150px; margin: 0 auto;">
+        <i class="fas fa-user-circle fa-5x text-muted"></i>
+    </div>
+    {% endif %}
+    <h4>{{ user.full_name }}</h4>
+    <p class="text-muted">{{ user.affiliation }}</p>
+    
+        
+        
+        <div class="card">
+            <div class="card-body">
+                <h6>Статистика</h6>
+                <div class="row text-center">
+                    <div class="col-4">
+                        <div class="display-6">{{ materials|length }}</div>
+                        <small class="text-muted">Материалов</small>
+                    </div>
+                    <div class="col-4">
+                        <div class="display-6">{{ bookmarks|length }}</div>
+                        <small class="text-muted">Закладок</small>
+                    </div>
+                    <div class="col-4">
+                        <div class="display-6">{{ verifications|length }}</div>
+                        <small class="text-muted">Проверок</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-8">
+        <!-- Мои материалы -->
+        <div class="card mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Мои материалы</h5>
+                <a href="{{ url_for('add_material') }}" class="btn btn-sm btn-primary">
+                    <i class="fas fa-plus"></i> Добавить материал
+                </a>
+            </div>
+            <div class="card-body">
+                {% if materials %}
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Формула</th>
+                                <th>Название</th>
+                                <th>Статус</th>
+                                <th>Дата</th>
+                                <th>Действия</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for material in materials %}
+                            <tr>
+                                <td><strong>{{ material.formula }}</strong></td>
+                                <td>{{ material.name or '-' }}</td>
+                                <td>
+                                    {% if material.is_verified %}
+                                    <span class="badge bg-success">✓ Проверен</span>
+                                    {% else %}
+                                    <span class="badge bg-warning">⏳ На проверке</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ material.created_at.strftime('%d.%m.%Y') }}</td>
+                                <td>
+                                    <a href="{{ url_for('material_detail', material_id=material.id) }}" 
+                                       class="btn btn-sm btn-outline-primary">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                    <a href="{{ url_for('edit_material', material_id=material.id) }}" 
+                                       class="btn btn-sm btn-outline-warning" title="Редактировать материал">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+<button type="button" class="btn btn-sm btn-outline-danger" 
+        onclick="deleteMaterial({{ material.id }})" title="Удалить материал">
+    <i class="fas fa-trash"></i>
+</button>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="text-center py-4">
+                    <p class="text-muted mb-3">Вы еще не добавили ни одного материала</p>
+                    <a href="{{ url_for('add_material') }}" class="btn btn-primary">
+                        <i class="fas fa-plus"></i> Добавить первый материал
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Мои закладки -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">Мои закладки</h5>
+            </div>
+            <div class="card-body">
+                {% if bookmarks %}
+                <div class="row">
+                    {% for bookmark in bookmarks %}
+                    <div class="col-md-6 mb-3">
+                        <div class="card h-100">
+                            <div class="card-body">
+                                <h6 class="card-title">{{ bookmark.material.formula }}</h6>
+                                <p class="card-text">{{ bookmark.material.name or '' }}</p>
+                                
+                                <div class="mb-2">
+                                    {% if bookmark.material.magnetic_order %}
+                                    <span class="badge bg-{% if bookmark.material.magnetic_order == 'FM' %}danger{% else %}info{% endif %} me-1">
+                                        {{ bookmark.material.magnetic_order }}
+                                    </span>
+                                    {% endif %}
+                                    
+                                    {% if bookmark.material.is_verified %}
+                                    <span class="badge bg-success me-1">✓</span>
+                                    {% endif %}
+                                    
+                                    {% if bookmark.material.curie_temperature %}
+                                    <span class="badge bg-secondary">
+                                        T<sub>C</sub> = {{ "%.0f"|format(bookmark.material.curie_temperature) }} K
+                                    </span>
+                                    {% endif %}
+                                </div>
+                                
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <small class="text-muted">
+                                        {{ bookmark.created_at.strftime('%d.%m.%Y') }}
+                                    </small>
+                                    <a href="{{ url_for('material_detail', material_id=bookmark.material.id) }}" 
+                                       class="btn btn-sm btn-outline-primary">
+                                        Перейти
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="text-center py-4">
+                    <p class="text-muted">У вас пока нет закладок</p>
+                    <a href="{{ url_for('browse') }}" class="btn btn-outline-primary">
+                        <i class="fas fa-search"></i> Найти материалы для закладок
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Мои проверки (для экспертов) -->
+        {% if current_user.is_expert() and verifications %}
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Мои проверки</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Материал</th>
+                                <th>Оценка</th>
+                                <th>Статус</th>
+                                <th>Дата</th>
+                                <th>Действия</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for verification in verifications %}
+                            <tr>
+                                <td>{{ verification.material.formula }}</td>
+                                <td>
+                                    <div class="progress" style="height: 20px;">
+                                        <div class="progress-bar {% if verification.overall_score >= 4 %}bg-success{% elif verification.overall_score >= 3 %}bg-warning{% else %}bg-danger{% endif %}" 
+                                             style="width: {{ verification.overall_score * 20 }}%">
+                                            {{ verification.overall_score|round(1) }}/5
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    {% if verification.is_approved %}
+                                    <span class="badge bg-success">Одобрено</span>
+                                    {% else %}
+                                    <span class="badge bg-danger">Отклонено</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ verification.completed_at.strftime('%d.%m.%Y') if verification.completed_at else 'В процессе' }}</td>
+                                <td>
+                                    <a href="{{ url_for('material_detail', material_id=verification.material.id) }}" 
+                                       class="btn btn-sm btn-outline-primary">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- In profile.html, update the profile picture section -->
+<div class="text-center mb-4">
+    {% if user.profile_picture %}
+    <img src="{{ url_for('static', filename='uploads/profiles/' + user.profile_picture) }}" 
+         class="img-thumbnail rounded-circle" 
+         width="150" height="150"
+         alt="Фото профиля">
+    {% else %}
+    <div class="bg-light rounded-circle d-flex align-items-center justify-content-center mb-3" 
+         style="width: 150px; height: 150px; margin: 0 auto;">
+        <i class="fas fa-user-circle fa-5x text-muted"></i>
+    </div>
+    {% endif %}
+    <h4>{{ user.full_name }}</h4>
+    <p class="text-muted">{{ user.affiliation }}</p>
+    
+    <div class="mt-3">
+            <a href="{{ url_for('edit_profile') }}" class="btn btn-outline-primary btn-sm">
+                   <i class="fas fa-edit"></i> Редактировать профиль
+            </a>
+    </div>
+</div>
+
+{% endblock %}
+
+<script>
+function deleteMaterial(materialId) {
+    if (confirm('Вы уверены, что хотите удалить этот материал? Это действие нельзя отменить.')) {
+        fetch(`/material/${materialId}/delete`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        })
+        .then(response => {
+            if (response.ok) {
+                location.reload(); // Reload page to update list
+            } else {
+                alert('Ошибка при удалении материала');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Ошибка при удалении материала');
+        });
+    }
+}
+</script>

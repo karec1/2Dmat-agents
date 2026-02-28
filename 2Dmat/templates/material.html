@@ -1,0 +1,236 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8">
+        <!-- Основная информация -->
+        <div class="card mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h4 class="mb-0">{{ material.formula }} - {{ material.name }}</h4>
+                {% if material.is_verified %}
+                <span class="badge bg-success">
+                    <i class="fas fa-check-circle"></i> Верифицировано ({{ "%.1f"|format(material.verification_score) }}%)
+                </span>
+                {% endif %}
+            </div>
+            <div class="card-body">
+                <!-- Таблицы со свойствами -->
+            </div>
+        </div>
+        
+        <!-- Визуализация -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">Визуализация</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <!-- Структура -->
+                    {% if structure_image %}
+                    <div class="col-md-6 mb-4">
+                        <h6>Кристаллическая структура</h6>
+                        <img src="{{ structure_image }}" class="img-fluid rounded" 
+                             alt="Кристаллическая структура">
+                        <div class="mt-2">
+                            <a href="{{ url_for('material_visualization', material_id=material.id) }}" 
+                               class="btn btn-sm btn-outline-primary">
+                                <i class="fas fa-cube"></i> 3D просмотр
+                            </a>
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    <!-- Зонная структура -->
+                    {% if band_structure_image %}
+                    <div class="col-md-6 mb-4">
+                        <h6>Зонная структура</h6>
+                        <img src="{{ band_structure_image }}" class="img-fluid rounded" 
+                             alt="Зонная структура">
+                        <div class="mt-2">
+                            <a href="{{ url_for('material_visualization', material_id=material.id) }}#bands" 
+                               class="btn btn-sm btn-outline-primary">
+                                <i class="fas fa-chart-line"></i> Интерактивный просмотр
+                            </a>
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    <!-- DOS -->
+                    {% if dos_image %}
+                    <div class="col-md-6 mb-4">
+                        <h6>Плотность состояний</h6>
+                        <img src="{{ dos_image }}" class="img-fluid rounded" 
+                             alt="Плотность состояний">
+                        <div class="mt-2">
+                            <a href="{{ url_for('material_visualization', material_id=material.id) }}#dos" 
+                               class="btn btn-sm btn-outline-primary">
+                                <i class="fas fa-chart-area"></i> Интерактивный просмотр
+                            </a>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Детали верификации -->
+        {% if material.is_verified and material.verification_notes %}
+        <div class="card mb-4">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0">Детали верификации</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6>Оценка качества</h6>
+                        <div class="progress mb-2">
+                            <div class="progress-bar bg-success" 
+                                 style="width: {{ material.verification_score }}%">
+                                {{ "%.1f"|format(material.verification_score) }}%
+                            </div>
+                        </div>
+                        <small class="text-muted">Общий балл верификации</small>
+                    </div>
+                    <div class="col-md-6">
+                        <h6>Замечания эксперта</h6>
+                        <div class="bg-light p-3 rounded">
+                            {{ material.verification_notes|replace('\n', '<br>')|safe }}
+                        </div>
+                        {% if material.verification_date %}
+                        <small class="text-muted">
+                            Проверено: {{ material.verification_date.strftime('%d.%m.%Y') }}
+                        </small>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+        
+        <!-- Входные файлы -->
+        {% if current_user.is_authenticated %}
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">Вычислительные файлы</h5>
+            </div>
+            <div class="card-body">
+                <div class="list-group">
+                    {% if material.cif_file_path %}
+                    <a href="{{ url_for('static', filename=material.cif_file_path[7:]) }}" 
+                       class="list-group-item list-group-item-action" download>
+                        <i class="fas fa-file-alt"></i> CIF файл структуры
+                    </a>
+                    {% endif %}
+                    
+                    {% if material.poscar_file_path %}
+                    <a href="{{ url_for('static', filename=material.poscar_file_path[7:]) }}" 
+                       class="list-group-item list-group-item-action" download>
+                        <i class="fas fa-file-code"></i> POSCAR файл
+                    </a>
+                    {% endif %}
+                    
+                    {% if material.input_files_path %}
+                    <a href="{{ material.input_files_path }}" 
+                       class="list-group-item list-group-item-action">
+                        <i class="fas fa-folder"></i> Полный набор входных файлов
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+    
+    <div class="col-md-4">
+        <!-- Действия -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">Действия</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <!-- Кнопка закладки -->
+                    <button class="btn btn-outline-primary" onclick="toggleBookmark({{ material.id }})"
+                            id="bookmarkBtn">
+                        <i class="fas fa-bookmark"></i> 
+                        <span id="bookmarkText">
+                            {% if is_bookmarked %}Удалить из закладок{% else %}В закладки{% endif %}
+                        </span>
+                    </button>
+                    
+                    <!-- Верификация (для экспертов) -->
+                    {% if current_user.is_authenticated and current_user.is_expert() and not material.is_verified %}
+                    <a href="{{ url_for('verify_material', material_id=material.id) }}" 
+                       class="btn btn-outline-warning">
+                        <i class="fas fa-check-double"></i> Верифицировать
+                    </a>
+                    {% endif %}
+                    
+                    <!-- Скачать данные -->
+                    <a href="/api/material/{{ material.id }}" 
+                       class="btn btn-outline-secondary" target="_blank">
+                        <i class="fas fa-code"></i> JSON данные
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Статистика -->
+        <div class="card mb-4">
+            <div class="card-body">
+                <h6>Статистика</h6>
+                <div class="row text-center">
+                    <div class="col-4">
+                        <div class="display-6">{{ material.views }}</div>
+                        <small class="text-muted">Просмотров</small>
+                    </div>
+                    <div class="col-4">
+                        <div class="display-6">{{ material.downloads }}</div>
+                        <small class="text-muted">Скачиваний</small>
+                    </div>
+                    <div class="col-4">
+                        <div class="display-6">{{ material.citations }}</div>
+                        <small class="text-muted">Цитирований</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Функция для работы с закладками
+function toggleBookmark(materialId) {
+    fetch(`/material/${materialId}/bookmark`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            const btn = document.getElementById('bookmarkBtn');
+            const text = document.getElementById('bookmarkText');
+            
+            if (text.textContent.includes('В закладки')) {
+                text.textContent = 'Удалить из закладок';
+                btn.classList.remove('btn-outline-primary');
+                btn.classList.add('btn-primary');
+            } else {
+                text.textContent = 'В закладки';
+                btn.classList.remove('btn-primary');
+                btn.classList.add('btn-outline-primary');
+            }
+            
+            // Показываем уведомление
+            showNotification(data.message, 'success');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showNotification('Ошибка при сохранении закладки', 'error');
+    });
+}
+</script>
+{% endblock %}

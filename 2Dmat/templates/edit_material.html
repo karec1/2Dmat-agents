@@ -1,0 +1,103 @@
+<!-- templates/edit_material.html -->
+{% extends "base.html" %}
+
+{% block title %}Редактировать материал - 2D Magnets Database{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
+        <h1 class="mb-4">Редактировать материал: {{ material.formula }}</h1>
+        
+        <form method="POST" action="{{ url_for('edit_material', material_id=material.id) }}" enctype="multipart/form-data">
+            {{ form.hidden_tag() }}
+            
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Основная информация</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            {{ form.name.label(class="form-label") }}
+                            {{ form.name(class="form-control" + (" is-invalid" if form.name.errors else "")) }}
+                            {% if form.name.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in form.name.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            {{ form.formula.label(class="form-label") }}
+                            {{ form.formula(class="form-control" + (" is-invalid" if form.formula.errors else "")) }}
+                            {% if form.formula.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in form.formula.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            {{ form.iupac_name.label(class="form-label") }}
+                            {{ form.iupac_name(class="form-control" + (" is-invalid" if form.iupac_name.errors else "")) }}
+                            {% if form.iupac_name.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in form.iupac_name.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            {{ form.cas_number.label(class="form-label") }}
+                            {{ form.cas_number(class="form-control" + (" is-invalid" if form.cas_number.errors else "")) }}
+                            {% if form.cas_number.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in form.cas_number.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Continue with other form sections (similar to add_material.html) -->
+            <!-- You can copy the other sections from add_material.html -->
+            
+            <!-- Existing files info -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Существующие файлы</h5>
+                </div>
+                <div class="card-body">
+                    {% if material.cif_file_path %}
+                    <p><i class="fas fa-file-alt"></i> CIF файл: {{ material.cif_file_path.split('/')[-1] }}</p>
+                    {% endif %}
+                    {% if material.poscar_file_path %}
+                    <p><i class="fas fa-file-code"></i> POSCAR файл: {{ material.poscar_file_path.split('/')[-1] }}</p>
+                    {% endif %}
+                    <small class="text-muted">Загрузите новые файлы, чтобы заменить существующие</small>
+                </div>
+            </div>
+            
+            <!-- File upload sections (copy from add_material.html) -->
+            
+            <div class="d-grid gap-2">
+                {{ form.submit(class="btn btn-primary btn-lg", value="Сохранить изменения") }}
+                <a href="{{ url_for('profile') }}" class="btn btn-outline-secondary">
+                    Отмена
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

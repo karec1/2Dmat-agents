@@ -1,0 +1,102 @@
+<!-- templates/visualization.html -->
+{% extends "base.html" %}
+
+{% block title %}Визуализация {{ material.formula }} - 2D Magnets Database{% endblock %}
+
+{% block extra_css %}
+<style>
+    .vis-container {
+        border: 1px solid #dee2e6;
+        border-radius: 5px;
+        padding: 15px;
+        margin-bottom: 20px;
+        background: white;
+    }
+    .vis-header {
+        border-bottom: 2px solid #0d6efd;
+        padding-bottom: 10px;
+        margin-bottom: 15px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<nav aria-label="breadcrumb" class="mb-4">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{{ url_for('index') }}">Главная</a></li>
+        <li class="breadcrumb-item"><a href="{{ url_for('material_detail', material_id=material.id) }}">{{ material.formula }}</a></li>
+        <li class="breadcrumb-item active">Визуализация</li>
+    </ol>
+</nav>
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h4 class="mb-0">Интерактивная визуализация: {{ material.formula }}</h4>
+            </div>
+            <div class="card-body">
+                <!-- 3D Структура -->
+                {% if interactive_structure %}
+                <div class="vis-container">
+                    <div class="vis-header">
+                        <h5><i class="fas fa-cube"></i> Кристаллическая структура</h5>
+                    </div>
+                    <div id="structure-vis">
+                        {{ interactive_structure|safe }}
+                    </div>
+                </div>
+                {% else %}
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle"></i> 3D визуализация структуры недоступна
+                </div>
+                {% endif %}
+                
+                <!-- Зонная структура -->
+                {% if interactive_bands %}
+                <div class="vis-container">
+                    <div class="vis-header">
+                        <h5><i class="fas fa-chart-line"></i> Зонная структура</h5>
+                    </div>
+                    <div id="bands-vis">
+                        {{ interactive_bands|safe }}
+                    </div>
+                </div>
+                {% else %}
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle"></i> Интерактивная зонная структура недоступна
+                </div>
+                {% endif %}
+                
+                <!-- Плотность состояний -->
+                {% if interactive_dos %}
+                <div class="vis-container">
+                    <div class="vis-header">
+                        <h5><i class="fas fa-chart-area"></i> Плотность состояний (DOS)</h5>
+                    </div>
+                    <div id="dos-vis">
+                        {{ interactive_dos|safe }}
+                    </div>
+                </div>
+                {% else %}
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle"></i> Интерактивная плотность состояний недоступна
+                </div>
+                {% endif %}
+                
+                <!-- Инструкции -->
+                <div class="card mt-4">
+                    <div class="card-body">
+                        <h5><i class="fas fa-question-circle"></i> Инструкции</h5>
+                        <ul>
+                            <li>Для 3D структуры: используйте мышь для вращения, колесико для масштабирования</li>
+                            <li>Для графиков: наведите курсор для значений, используйте инструменты в правом верхнем углу</li>
+                            <li>Экспорт: используйте кнопку камеры для сохранения изображения</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

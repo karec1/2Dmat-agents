@@ -1,0 +1,157 @@
+{% extends "base.html" %}
+
+{% block title %}API Документация - 2D Magnets Database{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8">
+        <h1 class="mb-4">
+            <i class="fas fa-code"></i> API Документация
+        </h1>
+        
+        <div class="alert alert-info">
+            <h5 class="alert-heading"><i class="fas fa-info-circle"></i> Основная информация</h5>
+            <p>
+                Все API endpoints возвращают данные в формате JSON. 
+                Базовый URL: <code>{{ request.host_url }}api/</code>
+            </p>
+        </div>
+        
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">Доступные Endpoints</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Метод</th>
+                                <th>Endpoint</th>
+                                <th>Описание</th>
+                                <th>Параметры</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for endpoint in endpoints %}
+                            <tr>
+                                <td>
+                                    <span class="badge bg-{% if endpoint.method == 'GET' %}success{% elif endpoint.method == 'POST' %}primary{% else %}warning{% endif %}">
+                                        {{ endpoint.method }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <code>{{ endpoint.endpoint }}</code>
+                                </td>
+                                <td>{{ endpoint.description }}</td>
+                                <td>
+                                    {% if endpoint.parameters %}
+                                    <small>{{ endpoint.parameters }}</small>
+                                    {% else %}
+                                    <span class="text-muted">нет</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">Примеры использования</h5>
+            </div>
+            <div class="card-body">
+                <h6>1. Получение списка материалов (с пагинацией)</h6>
+                <pre class="bg-light p-3"><code>GET {{ request.host_url }}api/materials?page=1&per_page=10</code></pre>
+                
+                <h6 class="mt-4">2. Поиск ферромагнетиков с Tc > 100K</h6>
+                <pre class="bg-light p-3"><code>GET {{ request.host_url }}api/search?magnetic_order=FM&min_tc=100</code></pre>
+                
+                <h6 class="mt-4">3. Получение детальной информации о материале</h6>
+                <pre class="bg-light p-3"><code>GET {{ request.host_url }}api/material/1</code></pre>
+                
+                <h6 class="mt-4">4. Пример ответа API</h6>
+                <pre class="bg-light p-3"><code>{
+  "id": 1,
+  "formula": "CrI3",
+  "name": "Chromium(III) iodide",
+  "structure_type": "Monolayer",
+  "magnetic": {
+    "order": "FM",
+    "moment": 3.0,
+    "tc_estimate": 45.0
+  },
+  "electronic": {
+    "band_gap": 1.2,
+    "band_gap_type": "direct"
+  }
+}</code></pre>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Быстрые ссылки</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <a href="/api/materials" class="btn btn-outline-primary" target="_blank">
+                        <i class="fas fa-list"></i> Все материалы
+                    </a>
+                    <a href="/api/stats" class="btn btn-outline-secondary" target="_blank">
+                        <i class="fas fa-chart-bar"></i> Статистика
+                    </a>
+                    <a href="/api/export/csv" class="btn btn-outline-success">
+                        <i class="fas fa-download"></i> Экспорт CSV
+                    </a>
+                    <button class="btn btn-outline-info" onclick="testApi()">
+                        <i class="fas fa-vial"></i> Тест API
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card mt-4">
+            <div class="card-header">
+                <h5 class="mb-0">Пример на JavaScript</h5>
+            </div>
+            <div class="card-body">
+                <pre class="bg-light p-3"><code>// Получение списка материалов
+fetch('{{ request.host_url }}api/materials')
+  .then(response => response.json())
+  .then(data => {
+    console.log('Материалы:', data.materials);
+  });
+
+// Поиск ферромагнетиков
+fetch('{{ request.host_url }}api/search?magnetic_order=FM')
+  .then(response => response.json())
+  .then(data => {
+    console.log('Ферромагнетики:', data);
+  });</code></pre>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function testApi() {
+    fetch('/api/stats')
+        .then(response => response.json())
+        .then(data => {
+            alert(`База данных содержит:\n` +
+                  `Всего материалов: ${data.total_materials}\n` +
+                  `Ферромагнетиков: ${data.materials_by_order.FM || 0}\n` +
+                  `Средняя Tc: ${data.average_tc ? data.average_tc.toFixed(1) + ' K' : 'нет данных'}`);
+        })
+        .catch(error => {
+            alert('Ошибка при тестировании API: ' + error);
+        });
+}
+</script>
+{% endblock %}
