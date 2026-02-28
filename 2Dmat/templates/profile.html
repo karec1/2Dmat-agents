@@ -1,14 +1,14 @@
 <!-- templates/profile.html -->
 {% extends "base.html" %}
 
-{% block title %}Профиль - 2D Magnets Database{% endblock %}
+{% block title %}{{ t('profile') }} - 2D Magnets Database{% endblock %}
 
 {% block content %}
 <div class="row">
     <div class="col-md-4">
         <div class="card mb-4">
             <div class="card-header">
-                <h5 class="mb-0">Информация профиля</h5>
+                <h5 class="mb-0">{{ t('profile') }}</h5>
             </div>
             <div class="card-body">
                 <div class="text-center mb-4">
@@ -21,89 +21,53 @@
                 
                 <table class="table table-sm">
                     <tr>
-                        <td><strong>Имя пользователя:</strong></td>
+                        <td><strong>{{ t('username') }}:</strong></td>
                         <td>{{ user.username }}</td>
                     </tr>
                     <tr>
-                        <td><strong>Email:</strong></td>
+                        <td><strong>{{ t('email') }}:</strong></td>
                         <td>{{ user.email }}</td>
                     </tr>
                     {% if user.orcid %}
                     <tr>
-                        <td><strong>ORCID:</strong></td>
+                        <td><strong>{{ t('orcid') }}:</strong></td>
                         <td>{{ user.orcid }}</td>
                     </tr>
                     {% endif %}
                     <tr>
-                        <td><strong>Роль:</strong></td>
+                        <td><strong>{{ t('role') }}:</strong></td>
                         <td>
                             {% if user.role == 'admin' %}
-                            <span class="badge bg-danger">Администратор</span>
+                            <span class="badge bg-danger">{{ t('admin') }}</span>
                             {% elif user.role == 'expert' %}
-                            <span class="badge bg-warning">Эксперт</span>
+                            <span class="badge bg-warning">{{ t('expert_role') }}</span>
                             {% else %}
-                            <span class="badge bg-info">Пользователь</span>
+                            <span class="badge bg-info">{{ t('user') }}</span>
                             {% endif %}
                         </td>
                     </tr>
                     <tr>
-                        <td><strong>Дата регистрации:</strong></td>
+                        <td><strong>{{ t('registration_date') }}:</strong></td>
                         <td>{{ user.created_at.strftime('%d.%m.%Y') }}</td>
                     </tr>
                 </table>
                 
-		    <div class="mt-3">
-		            <a href="{{ url_for('edit_profile') }}" class="btn btn-outline-primary btn-sm">
-		                   <i class="fas fa-edit"></i> Редактировать профиль
-		            </a>
-		    </div>
-            </div>
-        </div>
-        
-            {% if user.profile_picture %}
-    <img src="{{ url_for('static', filename='uploads/profiles/' + user.profile_picture) }}" 
-         class="img-thumbnail rounded-circle" 
-         width="150" height="150"
-         alt="Фото профиля">
-    {% else %}
-    <div class="bg-light rounded-circle d-flex align-items-center justify-content-center mb-3" 
-         style="width: 150px; height: 150px; margin: 0 auto;">
-        <i class="fas fa-user-circle fa-5x text-muted"></i>
-    </div>
-    {% endif %}
-    <h4>{{ user.full_name }}</h4>
-    <p class="text-muted">{{ user.affiliation }}</p>
-    
-        
-        
-        <div class="card">
-            <div class="card-body">
-                <h6>Статистика</h6>
-                <div class="row text-center">
-                    <div class="col-4">
-                        <div class="display-6">{{ materials|length }}</div>
-                        <small class="text-muted">Материалов</small>
-                    </div>
-                    <div class="col-4">
-                        <div class="display-6">{{ bookmarks|length }}</div>
-                        <small class="text-muted">Закладок</small>
-                    </div>
-                    <div class="col-4">
-                        <div class="display-6">{{ verifications|length }}</div>
-                        <small class="text-muted">Проверок</small>
-                    </div>
+                <div class="mt-3">
+                    <a href="{{ url_for('edit_profile') }}" class="btn btn-outline-primary btn-sm">
+                        <i class="fas fa-edit"></i> {{ t('edit_profile') }}
+                    </a>
                 </div>
             </div>
         </div>
     </div>
     
     <div class="col-md-8">
-        <!-- Мои материалы -->
+        <!-- My Materials -->
         <div class="card mb-4">
             <div class="card-header d-flex justify-content-between align-items-center">
-                <h5 class="mb-0">Мои материалы</h5>
+                <h5 class="mb-0">{{ t('my_materials') }}</h5>
                 <a href="{{ url_for('add_material') }}" class="btn btn-sm btn-primary">
-                    <i class="fas fa-plus"></i> Добавить материал
+                    <i class="fas fa-plus"></i> {{ t('add_material') }}
                 </a>
             </div>
             <div class="card-body">
@@ -112,11 +76,11 @@
                     <table class="table table-sm">
                         <thead>
                             <tr>
-                                <th>Формула</th>
-                                <th>Название</th>
-                                <th>Статус</th>
-                                <th>Дата</th>
-                                <th>Действия</th>
+                                <th>{{ t('formula') }}</th>
+                                <th>{{ t('name') }}</th>
+                                <th>{{ t('verification') }}</th>
+                                <th>{{ t('created_at') }}</th>
+                                <th>{{ t('actions') }}</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -126,9 +90,9 @@
                                 <td>{{ material.name or '-' }}</td>
                                 <td>
                                     {% if material.is_verified %}
-                                    <span class="badge bg-success">✓ Проверен</span>
+                                    <span class="badge bg-success">{{ t('verified') }}</span>
                                     {% else %}
-                                    <span class="badge bg-warning">⏳ На проверке</span>
+                                    <span class="badge bg-warning">{{ t('waiting_verification') }}</span>
                                     {% endif %}
                                 </td>
                                 <td>{{ material.created_at.strftime('%d.%m.%Y') }}</td>
@@ -138,13 +102,13 @@
                                         <i class="fas fa-eye"></i>
                                     </a>
                                     <a href="{{ url_for('edit_material', material_id=material.id) }}" 
-                                       class="btn btn-sm btn-outline-warning" title="Редактировать материал">
+                                       class="btn btn-sm btn-outline-warning" title="{{ t('edit') }}">
                                         <i class="fas fa-edit"></i>
                                     </a>
-<button type="button" class="btn btn-sm btn-outline-danger" 
-        onclick="deleteMaterial({{ material.id }})" title="Удалить материал">
-    <i class="fas fa-trash"></i>
-</button>
+                                    <button type="button" class="btn btn-sm btn-outline-danger" 
+                                            onclick="deleteMaterial({{ material.id }})" title="{{ t('delete') }}">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
                                 </td>
                             </tr>
                             {% endfor %}
@@ -153,19 +117,19 @@
                 </div>
                 {% else %}
                 <div class="text-center py-4">
-                    <p class="text-muted mb-3">Вы еще не добавили ни одного материала</p>
+                    <p class="text-muted mb-3">{{ t('no_materials') }}</p>
                     <a href="{{ url_for('add_material') }}" class="btn btn-primary">
-                        <i class="fas fa-plus"></i> Добавить первый материал
+                        <i class="fas fa-plus"></i> {{ t('add_first_material') }}
                     </a>
                 </div>
                 {% endif %}
             </div>
         </div>
         
-        <!-- Мои закладки -->
+        <!-- My Bookmarks -->
         <div class="card mb-4">
             <div class="card-header">
-                <h5 class="mb-0">Мои закладки</h5>
+                <h5 class="mb-0">{{ t('my_bookmarks') }}</h5>
             </div>
             <div class="card-body">
                 {% if bookmarks %}
@@ -185,12 +149,12 @@
                                     {% endif %}
                                     
                                     {% if bookmark.material.is_verified %}
-                                    <span class="badge bg-success me-1">✓</span>
+                                    <span class="badge bg-success me-1">{{ t('verified') }}</span>
                                     {% endif %}
                                     
                                     {% if bookmark.material.curie_temperature %}
                                     <span class="badge bg-secondary">
-                                        T<sub>C</sub> = {{ "%.0f"|format(bookmark.material.curie_temperature) }} K
+                                        Tc = {{ "%.0f"|format(bookmark.material.curie_temperature) }} K
                                     </span>
                                     {% endif %}
                                 </div>
@@ -201,7 +165,7 @@
                                     </small>
                                     <a href="{{ url_for('material_detail', material_id=bookmark.material.id) }}" 
                                        class="btn btn-sm btn-outline-primary">
-                                        Перейти
+                                        {{ t('view') }}
                                     </a>
                                 </div>
                             </div>
@@ -211,31 +175,31 @@
                 </div>
                 {% else %}
                 <div class="text-center py-4">
-                    <p class="text-muted">У вас пока нет закладок</p>
+                    <p class="text-muted">{{ t('no_bookmarks') }}</p>
                     <a href="{{ url_for('browse') }}" class="btn btn-outline-primary">
-                        <i class="fas fa-search"></i> Найти материалы для закладок
+                        <i class="fas fa-search"></i> {{ t('browse') }}
                     </a>
                 </div>
                 {% endif %}
             </div>
         </div>
         
-        <!-- Мои проверки (для экспертов) -->
+        <!-- My Verifications (for experts) -->
         {% if current_user.is_expert() and verifications %}
         <div class="card">
             <div class="card-header">
-                <h5 class="mb-0">Мои проверки</h5>
+                <h5 class="mb-0">{{ t('my_verifications') }}</h5>
             </div>
             <div class="card-body">
                 <div class="table-responsive">
                     <table class="table table-sm">
                         <thead>
                             <tr>
-                                <th>Материал</th>
-                                <th>Оценка</th>
-                                <th>Статус</th>
-                                <th>Дата</th>
-                                <th>Действия</th>
+                                <th>{{ t('materials') }}</th>
+                                <th>{{ t('rating') }}</th>
+                                <th>{{ t('verification') }}</th>
+                                <th>{{ t('created_at') }}</th>
+                                <th>{{ t('actions') }}</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -252,12 +216,12 @@
                                 </td>
                                 <td>
                                     {% if verification.is_approved %}
-                                    <span class="badge bg-success">Одобрено</span>
+                                    <span class="badge bg-success">{{ t('approved') }}</span>
                                     {% else %}
-                                    <span class="badge bg-danger">Отклонено</span>
+                                    <span class="badge bg-danger">{{ t('rejected') }}</span>
                                     {% endif %}
                                 </td>
-                                <td>{{ verification.completed_at.strftime('%d.%m.%Y') if verification.completed_at else 'В процессе' }}</td>
+                                <td>{{ verification.completed_at.strftime('%d.%m.%Y') if verification.completed_at else 'In progress' }}</td>
                                 <td>
                                     <a href="{{ url_for('material_detail', material_id=verification.material.id) }}" 
                                        class="btn btn-sm btn-outline-primary">
@@ -275,34 +239,9 @@
     </div>
 </div>
 
-<!-- In profile.html, update the profile picture section -->
-<div class="text-center mb-4">
-    {% if user.profile_picture %}
-    <img src="{{ url_for('static', filename='uploads/profiles/' + user.profile_picture) }}" 
-         class="img-thumbnail rounded-circle" 
-         width="150" height="150"
-         alt="Фото профиля">
-    {% else %}
-    <div class="bg-light rounded-circle d-flex align-items-center justify-content-center mb-3" 
-         style="width: 150px; height: 150px; margin: 0 auto;">
-        <i class="fas fa-user-circle fa-5x text-muted"></i>
-    </div>
-    {% endif %}
-    <h4>{{ user.full_name }}</h4>
-    <p class="text-muted">{{ user.affiliation }}</p>
-    
-    <div class="mt-3">
-            <a href="{{ url_for('edit_profile') }}" class="btn btn-outline-primary btn-sm">
-                   <i class="fas fa-edit"></i> Редактировать профиль
-            </a>
-    </div>
-</div>
-
-{% endblock %}
-
 <script>
 function deleteMaterial(materialId) {
-    if (confirm('Вы уверены, что хотите удалить этот материал? Это действие нельзя отменить.')) {
+    if (confirm('{{ t("confirm_delete") }}')) {
         fetch(`/material/${materialId}/delete`, {
             method: 'POST',
             headers: {
@@ -311,15 +250,17 @@ function deleteMaterial(materialId) {
         })
         .then(response => {
             if (response.ok) {
-                location.reload(); // Reload page to update list
+                location.reload();
             } else {
-                alert('Ошибка при удалении материала');
+                alert('{{ t("error") }}');
             }
         })
         .catch(error => {
             console.error('Error:', error);
-            alert('Ошибка при удалении материала');
+            alert('{{ t("error") }}');
         });
     }
 }
 </script>
+
+{% endblock %}

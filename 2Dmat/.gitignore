@@ -1,0 +1,9 @@
+2Dmat/instance/
+2Dmat/venv/
+2Dmat/backups/
+*.pyc
+__pycache__/
+*.db
+*.db-journal
+.DS_Store
+

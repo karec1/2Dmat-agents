@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+
+{% block title %}{{ t('admin_panel') }} - {{ t('backup') }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1 class="mb-4"><i class="fas fa-database"></i> {{ t('database_backups') }}</h1>
+    
+    <div class="mb-3">
+        <a href="{{ url_for('admin_dashboard') }}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> {{ t('back') }}
+        </a>
+        <a href="{{ url_for('backup_database') }}" class="btn btn-primary" onclick="return confirm('Create a new backup?')">
+            <i class="fas fa-save"></i> {{ t('create_backup') }}
+        </a>
+    </div>
+    
+    <div class="card">
+        <div class="card-header bg-dark text-white">
+            <h5 class="mb-0"><i class="fas fa-folder"></i> {{ t('available_backups') }}</h5>
+        </div>
+        <div class="card-body">
+            {% if backups %}
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>{{ t('filename') }}</th>
+                        <th>{{ t('size') }}</th>
+                        <th>{{ t('created') }}</th>
+                        <th>{{ t('actions') }}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for backup in backups %}
+                    <tr>
+                        <td><i class="fas fa-database"></i> {{ backup.name }}</td>
+                        <td>{{ (backup.size / 1024)|round(2) }} KB</td>
+                        <td>{{ backup.mtime }}</td>
+                        <td>
+                            <a href="{{ url_for('restore_database', filename=backup.name) }}" 
+                               class="btn btn-sm btn-warning"
+                               onclick="return confirm('Restore from this backup? Current database will be saved.')">
+                                <i class="fas fa-undo"></i> {{ t('restore') }}
+                            </a>
+                            <a href="{{ url_for('static', filename='../backups/' + backup.name) }}" 
+                               class="btn btn-sm btn-info" download>
+                                <i class="fas fa-download"></i> {{ t('download') }}
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle"></i> {{ t('no_backups') }}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <div class="card mt-4">
+        <div class="card-header bg-info text-white">
+            <h5 class="mb-0"><i class="fas fa-info-circle"></i> {{ t('backup_info') }}</h5>
+        </div>
+        <div class="card-body">
+            <ul>
+                <li>{{ t('backup_info_1') }}</li>
+                <li>{{ t('backup_info_2') }}</li>
+                <li>{{ t('backup_info_3') }}</li>
+            </ul>
+        </div>
+    </div>
+</div>
+{% endblock %}

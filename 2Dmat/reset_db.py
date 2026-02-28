@@ -34,10 +34,10 @@ with app.app_context():
         admin = User(username='admin', email='admin@example.com')
         db.session.add(admin)
         db.session.commit()
-        print("👤 Created default admin user")
-    except:
+        print("Created default admin user")
+    except Exception:
         db.session.rollback()
-        print("ℹ️  Admin user already exists or model doesn't have email field")
+        print("Admin user already exists or model doesn't have email field")
     
     print("✅ Database reset complete!")
     print(f"📁 New database size: {os.path.getsize(db_path) if os.path.exists(db_path) else 0} bytes")

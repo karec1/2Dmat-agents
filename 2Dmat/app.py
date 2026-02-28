@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, jsonify, send_file, flash, redirect, url_for, abort
+from flask import Flask, render_template, request, jsonify, send_file, flash, redirect, url_for, abort, session
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 from flask_cors import CORS
 from werkzeug.utils import secure_filename
@@ -11,10 +11,13 @@ import secrets
 
 from PIL import Image
 from models import db, User, Material, Verification, Comment, Bookmark
-from forms import LoginForm, RegistrationForm, MaterialForm, VerificationForm, CommentForm
+from forms import (
+    LoginForm, RegistrationForm, MaterialForm, VerificationForm,
+    CommentForm, EditProfileForm, ChangePasswordForm
+)
 from utils.visualization import StructureVisualizer, BandStructureVisualizer, DOSVisualizer
 from flask_migrate import Migrate
-from forms import LoginForm, RegistrationForm, MaterialForm, VerificationForm, CommentForm, EditProfileForm, ChangePasswordForm
+from translations import translations, get_locale
 
 # Конфигурация
 app = Flask(__name__)
@@ -48,6 +51,21 @@ login_manager.login_message_category = 'info'
 def load_user(user_id):
     return db.session.get(User, int(user_id))
 
+
+@app.route('/set_language/<lang>')
+def set_language(lang):
+    if lang in ['en', 'ru']:
+        session['language'] = lang
+    return redirect(request.referrer or url_for('index'))
+
+
+@app.context_processor
+def inject_translations():
+    def t(key):
+        lang = session.get('language', request.accept_languages.best_match(['en', 'ru']) or 'en')
+        return translations.get(lang, translations['en']).get(key, key)
+    return dict(t=t)
+
 # Helper function for 404 errors
 def get_or_404(model, id):
     result = db.session.get(model, id)
@@ -77,9 +95,6 @@ with app.app_context():
     except Exception as e:
         print(f"Error initializing database: {e}")
 
-@login_manager.user_loader
-def load_user(user_id):
-    return db.session.get(User, int(user_id))
 
 def save_profile_picture(form_picture):
     """Сохраняет фотографию профиля и возвращает имя файла"""
@@ -98,12 +113,6 @@ def save_profile_picture(form_picture):
 
 os.makedirs(os.path.join(app.config['UPLOAD_FOLDER'], 'profiles'), exist_ok=True)
 
-def get_or_404(model, id):
-    """SQLAlchemy 2.0 compatible get_or_404"""
-    result = db.session.get(model, id)
-    if result is None:
-        abort(404)
-    return result
 
 @app.errorhandler(404)
 def not_found_error(error):
@@ -221,14 +230,14 @@ def material_detail(material_id):
         try:
             band_data = json.loads(material.band_structure_data)
             band_structure_image = BandStructureVisualizer.create_band_structure_plot(band_data)
-        except:
+        except (json.JSONDecodeError, ValueError):
             pass
     
     if material.dos_data:
         try:
             dos_data = json.loads(material.dos_data)
             dos_image = DOSVisualizer.create_dos_plot(dos_data)
-        except:
+        except (json.JSONDecodeError, ValueError):
             pass
     
     # Комментарии
@@ -273,14 +282,14 @@ def material_visualization(material_id):
         try:
             band_data = json.loads(material.band_structure_data)
             interactive_bands = BandStructureVisualizer.create_interactive_bands(band_data)
-        except:
+        except (json.JSONDecodeError, ValueError):
             pass
     
     if material.dos_data:
         try:
             dos_data = json.loads(material.dos_data)
             interactive_dos = DOSVisualizer.create_interactive_dos(dos_data)
-        except:
+        except (json.JSONDecodeError, ValueError):
             pass
     
     return render_template('visualization.html',
@@ -421,6 +430,25 @@ def profile():
                          materials=user_materials,
                          bookmarks=bookmarks,
                          verifications=verifications)
+
+
+@app.route('/admin')
+@login_required
+def admin_dashboard():
+    if not current_user.is_admin():
+        flash('Доступ запрещен', 'danger')
+        return redirect(url_for('index'))
+    
+    all_materials = Material.query.order_by(Material.created_at.desc()).all()
+    all_users = User.query.all()
+    pending_materials = Material.query.filter_by(is_verified=False, is_public=True).order_by(Material.created_at.desc()).all()
+    
+    return render_template('admin.html',
+                         materials=all_materials,
+                         users=all_users,
+                         pending_materials=pending_materials,
+                         pending_count=len(pending_materials))
+
 
 # Добавление комментария
 @app.route('/material/<int:material_id>/comment', methods=['POST'])
@@ -809,6 +837,91 @@ def export_csv():
         as_attachment=True,
         download_name='2d_materials_database.csv'
     )
+
+
+@app.route('/admin/backup')
+@login_required
+def backup_database():
+    if not current_user.is_admin():
+        flash('Access denied', 'danger')
+        return redirect(url_for('index'))
+    
+    import shutil
+    from datetime import datetime
+    
+    db_path = app.config['SQLALCHEMY_DATABASE_URI'].replace('sqlite:///', '')
+    backup_dir = os.path.join(app.root_path, 'backups')
+    os.makedirs(backup_dir, exist_ok=True)
+    
+    timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+    backup_path = os.path.join(backup_dir, f'backup_{timestamp}.db')
+    
+    try:
+        shutil.copy2(db_path, backup_path)
+        flash(f'Backup created: backup_{timestamp}.db', 'success')
+    except Exception as e:
+        flash(f'Backup failed: {str(e)}', 'danger')
+    
+    return redirect(url_for('admin_dashboard'))
+
+
+@app.route('/admin/restore/<filename>')
+@login_required
+def restore_database(filename):
+    if not current_user.is_admin():
+        flash('Access denied', 'danger')
+        return redirect(url_for('index'))
+    
+    import shutil
+    from datetime import datetime
+    
+    backup_dir = os.path.join(app.root_path, 'backups')
+    backup_path = os.path.join(backup_dir, filename)
+    
+    if not os.path.exists(backup_path):
+        flash('Backup file not found', 'danger')
+        return redirect(url_for('admin_dashboard'))
+    
+    db_path = app.config['SQLALCHEMY_DATABASE_URI'].replace('sqlite:///', '')
+    
+    try:
+        timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+        pre_restore = db_path + f'.pre_restore_{timestamp}'
+        shutil.copy2(db_path, pre_restore)
+        
+        shutil.copy2(backup_path, db_path)
+        flash(f'Database restored from {filename}', 'success')
+    except Exception as e:
+        flash(f'Restore failed: {str(e)}', 'danger')
+    
+    return redirect(url_for('admin_dashboard'))
+
+
+@app.route('/admin/backups')
+@login_required
+def list_backups():
+    if not current_user.is_admin():
+        flash('Access denied', 'danger')
+        return redirect(url_for('index'))
+    
+    backup_dir = os.path.join(app.root_path, 'backups')
+    os.makedirs(backup_dir, exist_ok=True)
+    
+    backups = []
+    if os.path.exists(backup_dir):
+        for f in sorted(os.listdir(backup_dir), reverse=True):
+            if f.endswith('.db'):
+                filepath = os.path.join(backup_dir, f)
+                size = os.path.getsize(filepath)
+                mtime = os.path.getmtime(filepath)
+                backups.append({
+                    'name': f,
+                    'size': size,
+                    'mtime': datetime.fromtimestamp(mtime).strftime('%Y-%m-%d %H:%M:%S')
+                })
+    
+    return render_template('backups.html', backups=backups)
+
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5000)

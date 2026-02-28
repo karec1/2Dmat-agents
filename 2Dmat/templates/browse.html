@@ -1,26 +1,26 @@
 {% extends "base.html" %}
 
-{% block title %}Материалы - 2D Magnets Database{% endblock %}
+{% block title %}{{ t('materials') }} - 2D Magnets Database{% endblock %}
 
 {% block content %}
 <div class="row">
     <div class="col-md-3">
         <div class="card mb-4">
             <div class="card-header">
-                <h5 class="mb-0">Фильтры</h5>
+                <h5 class="mb-0">{{ t('filters') }}</h5>
             </div>
             <div class="card-body">
                 <form method="get" action="{{ url_for('browse') }}">
                     <div class="mb-3">
-                        <label class="form-label">Формула</label>
+                        <label class="form-label">{{ t('formula') }}</label>
                         <input type="text" class="form-control" name="formula" 
                                value="{{ filters.formula }}">
                     </div>
                     
                     <div class="mb-3">
-                        <label class="form-label">Магнитный порядок</label>
+                        <label class="form-label">{{ t('magnetic_order') }}</label>
                         <select class="form-select" name="magnetic_order">
-                            <option value="">Все</option>
+                            <option value="">{{ t('all') }}</option>
                             {% for order in unique_orders %}
                             <option value="{{ order }}" 
                                     {% if filters.magnetic_order == order %}selected{% endif %}>
@@ -32,7 +32,7 @@
                     
                     <div class="mb-3">
                         <label class="form-label">
-                            Минимальная T<sub>C</sub> (K)
+                            {{ t('min_tc') }}
                             {% if filters.min_tc %}
                             <span class="badge bg-info">{{ filters.min_tc }} K</span>
                             {% endif %}
@@ -49,10 +49,10 @@
                     
                     <div class="d-grid gap-2">
                         <button type="submit" class="btn btn-primary">
-                            <i class="fas fa-filter"></i> Применить фильтры
+                            <i class="fas fa-filter"></i> {{ t('apply_filters') }}
                         </button>
                         <a href="{{ url_for('browse') }}" class="btn btn-outline-secondary">
-                            Сбросить
+                            {{ t('reset') }}
                         </a>
                     </div>
                 </form>
@@ -61,10 +61,10 @@
         
         <div class="card">
             <div class="card-body">
-                <h6>Статистика выборки</h6>
+                <h6>{{ t('statistics') }}</h6>
                 <ul class="list-unstyled">
-                    <li>Найдено: <strong>{{ materials|length }}</strong></li>
-                    <li>Ферромагнетиков: 
+                    <li>{{ t('found') }}: <strong>{{ materials|length }}</strong></li>
+                    <li>{{ t('ferromagnets') }}: 
                         <strong>{{ materials|selectattr('magnetic_order', 'equalto', 'FM')|list|length }}</strong>
                     </li>
                 </ul>
@@ -74,9 +74,9 @@
     
     <div class="col-md-9">
         <div class="d-flex justify-content-between align-items-center mb-4">
-            <h2>Материалы</h2>
+            <h2>{{ t('materials') }}</h2>
             <div>
-                <span class="badge bg-info me-2">Всего: {{ materials|length }}</span>
+                <span class="badge bg-info me-2">{{ t('total') }}: {{ materials|length }}</span>
                 <a href="/api/export/csv" class="btn btn-sm btn-outline-success">
                     <i class="fas fa-download"></i> CSV
                 </a>
@@ -88,14 +88,15 @@
             <table class="table table-hover">
                 <thead class="table-dark">
                     <tr>
-                        <th>Формула</th>
-                        <th>Название</th>
-                        <th>Структура</th>
-                        <th>E<sub>g</sub> (eV)</th>
-                        <th>Магн. порядок</th>
-                        <th>μ (μ<sub>B</sub>)</th>
-                        <th>T<sub>C</sub> (K)</th>
-                        <th>Действия</th>
+                        <th>{{ t('formula') }}</th>
+                        <th>{{ t('name') }}</th>
+                        <th>{{ t('structure') }}</th>
+                        <th>{{ t('verification') }}</th>
+                        <th>{{ t('band_gap') }}</th>
+                        <th>{{ t('magnetic_order') }}</th>
+                        <th>{{ t('magnetic_moment') }}</th>
+                        <th>{{ t('curie_temp') }}</th>
+                        <th>{{ t('actions') }}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -107,6 +108,13 @@
                         <td>{{ material.name }}</td>
                         <td>
                             <span class="badge bg-light text-dark">{{ material.structure_type }}</span>
+                        </td>
+                        <td>
+                            {% if material.is_verified %}
+                            <span class="badge bg-success"><i class="fas fa-check"></i> {{ t('yes') }}</span>
+                            {% else %}
+                            <span class="badge bg-warning text-dark"><i class="fas fa-clock"></i> {{ t('no') }}</span>
+                            {% endif %}
                         </td>
                         <td>
                             {% if material.band_gap %}
@@ -151,8 +159,8 @@
         {% else %}
         <div class="alert alert-info">
             <i class="fas fa-info-circle"></i>
-            Материалы по заданным фильтрам не найдены.
-            <a href="{{ url_for('browse') }}">Показать все материалы</a>
+            {{ t('no_materials_found') }}
+            <a href="{{ url_for('browse') }}">{{ t('show_all') }}</a>
         </div>
         {% endif %}
     </div>

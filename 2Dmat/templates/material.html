@@ -8,106 +8,107 @@
             <div class="card-header d-flex justify-content-between align-items-center">
                 <h4 class="mb-0">{{ material.formula }} - {{ material.name }}</h4>
                 {% if material.is_verified %}
-                <span class="badge bg-success">
+                <span class="badge bg-success fs-6">
                     <i class="fas fa-check-circle"></i> Верифицировано ({{ "%.1f"|format(material.verification_score) }}%)
+                </span>
+                {% else %}
+                <span class="badge bg-warning fs-6">
+                    <i class="fas fa-clock"></i> Ожидает верификации
                 </span>
                 {% endif %}
             </div>
             <div class="card-body">
-                <!-- Таблицы со свойствами -->
-            </div>
-        </div>
-        
-        <!-- Визуализация -->
-        <div class="card mb-4">
-            <div class="card-header">
-                <h5 class="mb-0">Визуализация</h5>
-            </div>
-            <div class="card-body">
-                <div class="row">
-                    <!-- Структура -->
-                    {% if structure_image %}
-                    <div class="col-md-6 mb-4">
-                        <h6>Кристаллическая структура</h6>
-                        <img src="{{ structure_image }}" class="img-fluid rounded" 
-                             alt="Кристаллическая структура">
-                        <div class="mt-2">
-                            <a href="{{ url_for('material_visualization', material_id=material.id) }}" 
-                               class="btn btn-sm btn-outline-primary">
-                                <i class="fas fa-cube"></i> 3D просмотр
-                            </a>
+                <!-- Basic Info -->
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <h6>{{ t('formula') }}:</h6>
+                        <p class="fs-5"><strong>{{ material.formula }}</strong></p>
+                    </div>
+                    <div class="col-md-6">
+                        <h6>{{ t('name') }}:</h6>
+                        <p>{{ material.name or '-' }}</p>
+                    </div>
+                </div>
+                
+                <!-- Crystal Structure Info -->
+                {% if material.crystal_system or material.space_group %}
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <h6>{{ t('crystal_system') }}:</h6>
+                        <p>{{ material.crystal_system or '-' }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <h6>{{ t('space_group') }}:</h6>
+                        <p>{{ material.space_group or '-' }}</p>
+                    </div>
+                </div>
+                {% endif %}
+                
+                <!-- Lattice Parameters -->
+                {% if material.lattice_params %}
+                {% set lattice = material.lattice_params|from_json %}
+                <div class="card mb-3">
+                    <div class="card-header">
+                        <h6 class="mb-0">{{ t('lattice_parameters') }}</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="row text-center">
+                            {% if lattice.a %}<div class="col"><strong>a</strong><br>{{ "%.3f"|format(lattice.a) }} Å</div>{% endif %}
+                            {% if lattice.b %}<div class="col"><strong>b</strong><br>{{ "%.3f"|format(lattice.b) }} Å</div>{% endif %}
+                            {% if lattice.c %}<div class="col"><strong>c</strong><br>{{ "%.3f"|format(lattice.c) }} Å</div>{% endif %}
+                            {% if lattice.alpha %}<div class="col"><strong>α</strong><br>{{ "%.1f"|format(lattice.alpha) }}°</div>{% endif %}
+                            {% if lattice.beta %}<div class="col"><strong>β</strong><br>{{ "%.1f"|format(lattice.beta) }}°</div>{% endif %}
+                            {% if lattice.gamma %}<div class="col"><strong>γ</strong><br>{{ "%.1f"|format(lattice.gamma) }}°</div>{% endif %}
                         </div>
                     </div>
-                    {% endif %}
-                    
-                    <!-- Зонная структура -->
-                    {% if band_structure_image %}
-                    <div class="col-md-6 mb-4">
-                        <h6>Зонная структура</h6>
-                        <img src="{{ band_structure_image }}" class="img-fluid rounded" 
-                             alt="Зонная структура">
-                        <div class="mt-2">
-                            <a href="{{ url_for('material_visualization', material_id=material.id) }}#bands" 
-                               class="btn btn-sm btn-outline-primary">
-                                <i class="fas fa-chart-line"></i> Интерактивный просмотр
-                            </a>
-                        </div>
+                </div>
+                {% endif %}
+                
+                <!-- Electronic Properties -->
+                {% if material.band_gap or material.magnetic_order %}
+                <div class="row mb-3">
+                    {% if material.band_gap %}
+                    <div class="col-md-4">
+                        <h6>{{ t('band_gap') }}:</h6>
+                        <p>{{ "%.3f"|format(material.band_gap) }} eV {% if material.band_gap_type %}({{ material.band_gap_type }}){% endif %}</p>
                     </div>
                     {% endif %}
-                    
-                    <!-- DOS -->
-                    {% if dos_image %}
-                    <div class="col-md-6 mb-4">
-                        <h6>Плотность состояний</h6>
-                        <img src="{{ dos_image }}" class="img-fluid rounded" 
-                             alt="Плотность состояний">
-                        <div class="mt-2">
-                            <a href="{{ url_for('material_visualization', material_id=material.id) }}#dos" 
-                               class="btn btn-sm btn-outline-primary">
-                                <i class="fas fa-chart-area"></i> Интерактивный просмотр
-                            </a>
-                        </div>
+                    {% if material.magnetic_order %}
+                    <div class="col-md-4">
+                        <h6>{{ t('magnetic_order') }}:</h6>
+                        <p><span class="badge bg-{% if material.magnetic_order == 'FM' %}danger{% else %}info{% endif %}">{{ material.magnetic_order }}</span></p>
+                    </div>
+                    {% endif %}
+                    {% if material.curie_temperature %}
+                    <div class="col-md-4">
+                        <h6>{{ t('curie_temperature') }}:</h6>
+                        <p>{{ "%.0f"|format(material.curie_temperature) }} K</p>
                     </div>
                     {% endif %}
                 </div>
+                {% endif %}
             </div>
         </div>
         
-        <!-- Детали верификации -->
-        {% if material.is_verified and material.verification_notes %}
-        <div class="card mb-4">
-            <div class="card-header bg-success text-white">
-                <h5 class="mb-0">Детали верификации</h5>
+        {% if not material.is_verified %}
+        <div class="card mb-4 border-warning">
+            <div class="card-header bg-warning text-dark">
+                <h5 class="mb-0"><i class="fas fa-clock"></i> Материал ожидает верификации</h5>
             </div>
             <div class="card-body">
-                <div class="row">
-                    <div class="col-md-6">
-                        <h6>Оценка качества</h6>
-                        <div class="progress mb-2">
-                            <div class="progress-bar bg-success" 
-                                 style="width: {{ material.verification_score }}%">
-                                {{ "%.1f"|format(material.verification_score) }}%
-                            </div>
-                        </div>
-                        <small class="text-muted">Общий балл верификации</small>
-                    </div>
-                    <div class="col-md-6">
-                        <h6>Замечания эксперта</h6>
-                        <div class="bg-light p-3 rounded">
-                            {{ material.verification_notes|replace('\n', '<br>')|safe }}
-                        </div>
-                        {% if material.verification_date %}
-                        <small class="text-muted">
-                            Проверено: {{ material.verification_date.strftime('%d.%m.%Y') }}
-                        </small>
-                        {% endif %}
-                    </div>
-                </div>
+                <p class="mb-2">Этот материал еще не прошел экспертную верификацию.</p>
+                {% if current_user.is_authenticated and current_user.is_expert() %}
+                <a href="{{ url_for('verify_material', material_id=material.id) }}" 
+                   class="btn btn-warning">
+                    <i class="fas fa-check"></i> Верифицировать материал
+                </a>
+                {% else %}
+                <small class="text-muted">Свяжитесь с экспертом для верификации.</small>
+                {% endif %}
             </div>
         </div>
         {% endif %}
         
-        <!-- Входные файлы -->
         {% if current_user.is_authenticated %}
         <div class="card mb-4">
             <div class="card-header">
@@ -166,6 +167,24 @@
                     </a>
                     {% endif %}
                     
+                    <!-- Редактирование (для владельца или админа) -->
+                    {% if current_user.is_authenticated and (current_user.id == material.user_id or current_user.is_admin()) %}
+                    <a href="{{ url_for('edit_material', material_id=material.id) }}" 
+                       class="btn btn-outline-primary">
+                        <i class="fas fa-edit"></i> Редактировать
+                    </a>
+                    {% endif %}
+                    
+                    <!-- Удаление (для владельца или админа) -->
+                    {% if current_user.is_authenticated and (current_user.id == material.user_id or current_user.is_admin()) %}
+                    <form method="POST" action="{{ url_for('delete_material', material_id=material.id) }}" 
+                          style="display:inline;" onsubmit="return confirm('Вы уверены, что хотите удалить этот материал?');">
+                        <button type="submit" class="btn btn-outline-danger">
+                            <i class="fas fa-trash"></i> Удалить
+                        </button>
+                    </form>
+                    {% endif %}
+                    
                     <!-- Скачать данные -->
                     <a href="/api/material/{{ material.id }}" 
                        class="btn btn-outline-secondary" target="_blank">
@@ -195,6 +214,42 @@
                 </div>
             </div>
         </div>
+        
+        <!-- Crystal Structure Visualization -->
+        {% if structure_image %}
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-cubes"></i> {{ t('structure_visualization') }}</h5>
+            </div>
+            <div class="card-body text-center">
+                <img src="{{ structure_image }}" alt="Crystal Structure" class="img-fluid" style="max-height: 500px;">
+            </div>
+        </div>
+        {% endif %}
+        
+        <!-- Band Structure -->
+        {% if band_structure_image %}
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-chart-line"></i> {{ t('band_structure') }}</h5>
+            </div>
+            <div class="card-body text-center">
+                <img src="{{ band_structure_image }}" alt="Band Structure" class="img-fluid" style="max-height: 400px;">
+            </div>
+        </div>
+        {% endif %}
+        
+        <!-- DOS -->
+        {% if dos_image %}
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-chart-area"></i> {{ t('dos') }}</h5>
+            </div>
+            <div class="card-body text-center">
+                <img src="{{ dos_image }}" alt="DOS" class="img-fluid" style="max-height: 400px;">
+            </div>
+        </div>
+        {% endif %}
     </div>
 </div>
 

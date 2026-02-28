@@ -1,0 +1,195 @@
+<!-- templates/admin.html -->
+{% extends "base.html" %}
+
+{% block title %}{{ t('admin_panel') }} - 2D Materials{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1 class="mb-4"><i class="fas fa-cogs"></i> {{ t('admin_panel') }}</h1>
+    
+    <!-- Quick Actions -->
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="d-flex gap-2">
+                <a href="{{ url_for('list_backups') }}" class="btn btn-outline-primary">
+                    <i class="fas fa-database"></i> {{ t('database_backups') }}
+                </a>
+                <a href="{{ url_for('backup_database') }}" class="btn btn-success" onclick="return confirm('Create backup now?')">
+                    <i class="fas fa-save"></i> {{ t('create_backup') }}
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Statistics -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card text-white bg-primary">
+                <div class="card-body">
+                    <h5 class="card-title">Всего материалов</h5>
+                    <h2>{{ materials|length }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-white bg-warning">
+                <div class="card-body">
+                    <h5 class="card-title">На верификации</h5>
+                    <h2>{{ pending_count }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-white bg-success">
+                <div class="card-body">
+                    <h5 class="card-title">Верифицировано</h5>
+                    <h2>{{ materials|selectattr('is_verified')|list|length }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-white bg-info">
+                <div class="card-body">
+                    <h5 class="card-title">Пользователей</h5>
+                    <h2>{{ users|length }}</h2>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Лист ожидания верификации -->
+    {% if pending_materials %}
+    <div class="card mb-4 border-warning">
+        <div class="card-header bg-warning text-dark">
+            <h5 class="mb-0"><i class="fas fa-clock"></i> Ожидают верификации ({{ pending_count }})</h5>
+        </div>
+        <div class="card-body">
+            <table class="table table-hover">
+                <thead class="table-light">
+                    <tr>
+                        <th>ID</th>
+                        <th>Название</th>
+                        <th>Формула</th>
+                        <th>Автор</th>
+                        <th>Дата добавления</th>
+                        <th>Действия</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for material in pending_materials %}
+                    <tr>
+                        <td>{{ material.id }}</td>
+                        <td><a href="{{ url_for('material_detail', material_id=material.id) }}">{{ material.name }}</a></td>
+                        <td><code>{{ material.formula }}</code></td>
+                        <td>{{ material.author.username if material.author else 'N/A' }}</td>
+                        <td>{{ material.created_at.strftime('%Y-%m-%d') if material.created_at else 'N/A' }}</td>
+                        <td>
+                            <a href="{{ url_for('material_detail', material_id=material.id) }}" class="btn btn-sm btn-info">
+                                <i class="fas fa-eye"></i> Просмотр
+                            </a>
+                            <a href="{{ url_for('verify_material', material_id=material.id) }}" class="btn btn-sm btn-success">
+                                <i class="fas fa-check"></i> Верифицировать
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% endif %}
+    
+    <!-- Управление материалами -->
+    <div class="card mb-4">
+        <div class="card-header bg-dark text-white">
+            <h5 class="mb-0"><i class="fas fa-cubes"></i> Управление материалами</h5>
+        </div>
+        <div class="card-body">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Название</th>
+                        <th>Формула</th>
+                        <th>Автор</th>
+                        <th>Верификация</th>
+                        <th>Действия</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for material in materials %}
+                    <tr>
+                        <td>{{ material.id }}</td>
+                        <td><a href="{{ url_for('material_detail', material_id=material.id) }}">{{ material.name }}</a></td>
+                        <td>{{ material.formula }}</td>
+                        <td>{{ material.author.username if material.author else 'N/A' }}</td>
+                        <td>
+                            {% if material.is_verified %}
+                            <span class="badge bg-success">Верифицирован</span>
+                            {% else %}
+                            <span class="badge bg-warning">Не верифицирован</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <a href="{{ url_for('edit_material', material_id=material.id) }}" class="btn btn-sm btn-primary">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                            {% if not material.is_verified %}
+                            <a href="{{ url_for('verify_material', material_id=material.id) }}" class="btn btn-sm btn-warning">
+                                <i class="fas fa-check"></i>
+                            </a>
+                            {% endif %}
+                            <form method="POST" action="{{ url_for('delete_material', material_id=material.id) }}" 
+                                  style="display:inline;" onsubmit="return confirm('Удалить материал?');">
+                                <button type="submit" class="btn btn-sm btn-danger">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    
+    <!-- Управление пользователями -->
+    <div class="card">
+        <div class="card-header bg-dark text-white">
+            <h5 class="mb-0"><i class="fas fa-users"></i> Управление пользователями</h5>
+        </div>
+        <div class="card-body">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Имя пользователя</th>
+                        <th>Email</th>
+                        <th>Роль</th>
+                        <th>Дата регистрации</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for user in users %}
+                    <tr>
+                        <td>{{ user.id }}</td>
+                        <td>{{ user.username }}</td>
+                        <td>{{ user.email }}</td>
+                        <td>
+                            {% if user.role == 'admin' %}
+                            <span class="badge bg-danger">Админ</span>
+                            {% elif user.role == 'expert' %}
+                            <span class="badge bg-warning">Эксперт</span>
+                            {% else %}
+                            <span class="badge bg-secondary">Пользователь</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ user.created_at.strftime('%Y-%m-%d') if user.created_at else 'N/A' }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

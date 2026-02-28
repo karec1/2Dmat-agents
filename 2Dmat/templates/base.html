@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="{{ session.get('language', 'ru') }}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -21,18 +21,36 @@
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav me-auto">
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('index') }}">Главная</a>
+                        <a class="nav-link" href="{{ url_for('index') }}">{{ t('home') }}</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('browse') }}">Каталог</a>
+                        <a class="nav-link" href="{{ url_for('browse') }}">{{ t('browse') }}</a>
                     </li>
                     {% if current_user.is_authenticated %}
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('add_material') }}">Добавить материал</a>
+                        <a class="nav-link" href="{{ url_for('add_material') }}">{{ t('add_material') }}</a>
                     </li>
+                    {% if current_user.is_admin() %}
+                    <li class="nav-item">
+                        <a class="nav-link text-warning" href="{{ url_for('admin_dashboard') }}">
+                            <i class="fas fa-cogs"></i> {{ t('admin_panel') }}
+                        </a>
+                    </li>
+                    {% endif %}
                     {% endif %}
                 </ul>
                 <ul class="navbar-nav">
+                    <!-- Language Switcher -->
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="langDropdown" role="button" 
+                           data-bs-toggle="dropdown">
+                            <i class="fas fa-globe"></i> {{ session.get('language', 'ru')|upper }}
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li><a class="dropdown-item" href="{{ url_for('set_language', lang='en') }}">English</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('set_language', lang='ru') }}">Русский</a></li>
+                        </ul>
+                    </li>
                     {% if current_user.is_authenticated %}
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" 
@@ -40,17 +58,17 @@
                             {{ current_user.username }}
                         </a>
                         <ul class="dropdown-menu">
-                            <li><a class="dropdown-item" href="{{ url_for('profile') }}">Профиль</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('profile') }}">{{ t('profile') }}</a></li>
                             <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item" href="{{ url_for('logout') }}">Выйти</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('logout') }}">{{ t('logout') }}</a></li>
                         </ul>
                     </li>
                     {% else %}
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('login') }}">Войти</a>
+                        <a class="nav-link" href="{{ url_for('login') }}">{{ t('login') }}</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('register') }}">Регистрация</a>
+                        <a class="nav-link" href="{{ url_for('register') }}">{{ t('register') }}</a>
                     </li>
                     {% endif %}
                 </ul>
